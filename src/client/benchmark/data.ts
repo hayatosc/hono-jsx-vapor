@@ -34,3 +34,36 @@ export const createMutator = (mutateCount: number, seed = 1) => {
     return output;
   };
 };
+
+/**
+ * Create a deterministic mutator that alternates insert/remove operations.
+ * Each call performs exactly one operation (either insert or remove).
+ * Keys are stable via monotonically increasing `id`.
+ */
+export const createSpliceMutator = (seed = 1, initialNextId = 0) => {
+  const next = lcg(seed);
+  let nextId = Math.max(0, initialNextId);
+  let insertNext = true;
+
+  return (items: BenchItem[]): BenchItem[] => {
+    const len = items.length;
+    if (len === 0) {
+      const id = nextId++;
+      insertNext = false;
+      return [{ id, label: `Row ${id + 1}`, value: next() % 1000 }];
+    }
+
+    if (insertNext) {
+      const id = nextId++;
+      const idx = next() % (len + 1);
+      const value = next() % 1000;
+      const item: BenchItem = { id, label: `Row ${id + 1}`, value };
+      insertNext = false;
+      return [...items.slice(0, idx), item, ...items.slice(idx)];
+    }
+
+    const idx = next() % len;
+    insertNext = true;
+    return [...items.slice(0, idx), ...items.slice(idx + 1)];
+  };
+};

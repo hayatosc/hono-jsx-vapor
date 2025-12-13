@@ -1,5 +1,6 @@
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { defineConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 import ssrPlugin from 'vite-ssr-components/plugin';
 import VueJsxVapor from 'vue-jsx-vapor/vite';
 
@@ -9,6 +10,8 @@ export default defineConfig({
     jsxImportSource: 'hono/jsx',
   },
   plugins: [
+    // Tailwind CSS (Vite plugin)
+    tailwindcss(),
     // Vue JSX Vapor（client側JSXのみトランスパイル）
     VueJsxVapor({
       macros: true,

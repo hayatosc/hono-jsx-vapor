@@ -9,6 +9,7 @@ export type RunnerOptions = {
   mutateCount: number;
   seed: number;
   warmup?: number;
+  case?: RunnerCase;
 };
 
 export type RunOutcome = {
@@ -35,3 +36,5 @@ export type RunnerResult = {
 };
 
 export type RunnerKey = 'vapor' | 'hono';
+
+export type RunnerCase = 'update' | 'splice';

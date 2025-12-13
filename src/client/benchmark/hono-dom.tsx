@@ -1,6 +1,7 @@
 /** @jsxImportSource hono/jsx/dom */
-import { render, useState } from 'hono/jsx/dom';
-import { createMutator } from './data';
+import { useState } from 'hono/jsx/dom';
+import { createRoot, type Root } from 'hono/jsx/dom/client';
+import { createMutator, createSpliceMutator } from './data';
 import type { BenchItem, RunOutcome, RunnerOptions } from './types';
 
 type SetState<T> = (value: T | ((current: T) => T)) => void;
@@ -10,17 +11,16 @@ const nextPaint = () =>
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
   });
 
-export const runHonoDom = async (
-  target: HTMLElement,
-  items: BenchItem[],
-  options: RunnerOptions
-): Promise<RunOutcome> => {
+export const runHonoDom = async (target: HTMLElement, items: BenchItem[], options: RunnerOptions): Promise<RunOutcome> => {
   target.replaceChildren();
   const mountPoint = document.createElement('div');
   target.appendChild(mountPoint);
 
+  const root: Root = createRoot(mountPoint);
+
   const { updates, mutateCount, seed, warmup = 1 } = options;
-  const mutate = createMutator(mutateCount, seed);
+  const runCase = options.case ?? 'update';
+  const mutate = runCase === 'splice' ? createSpliceMutator(seed, items.length) : createMutator(mutateCount, seed);
 
   // コンポーネント外部から更新できるようにsetStateを保持
   let setItems: SetState<BenchItem[]> | null = null;
@@ -30,12 +30,12 @@ export const runHonoDom = async (
     setItems = setState; // 外部から参照できるようにする
 
     return (
-      <ul class="bench-list">
+      <ul class="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-1.5">
         {state.map((item) => (
-          <li class="bench-row" key={item.id}>
-            <span class="muted">#{item.id + 1}</span>
-            <span class="label">{item.label}</span>
-            <span class="value">{item.value}</span>
+          <li class="grid grid-cols-[56px_1fr_auto] items-center gap-2 p-2.5 rounded-lg bg-slate-900/5" key={item.id}>
+            <span class="text-slate-400 text-[13px]">#{item.id + 1}</span>
+            <span class="font-semibold">{item.label}</span>
+            <span class="font-mono tabular-nums text-cyan-500">{item.value}</span>
           </li>
         ))}
       </ul>
@@ -43,7 +43,7 @@ export const runHonoDom = async (
   };
 
   const mountStart = performance.now();
-  render(<HonoBenchApp />, mountPoint);
+  root.render(<HonoBenchApp />);
   await nextPaint();
   const mountDuration = performance.now() - mountStart;
 
@@ -75,8 +75,12 @@ export const runHonoDom = async (
     mountDuration,
     updateDurations: durations,
     cleanup: () => {
-      mountPoint.remove();
-      target.textContent = '';
+      try {
+        root.unmount();
+      } catch (error) {
+        console.warn('Hono root unmount failed', error);
+      }
+      target.replaceChildren();
     },
   };
 };
