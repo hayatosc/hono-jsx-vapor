@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue-jsx-vapor",
+    "lib": ["ESNext", "DOM"]
+  },
+  "include": ["src/client/**/*.tsx", "src/client/**/*.ts"]
+}
