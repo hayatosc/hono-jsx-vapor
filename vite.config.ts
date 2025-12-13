@@ -15,10 +15,7 @@ export default defineConfig({
       include: /src\/client\//,
     }),
     cloudflare(),
-    ssrPlugin({
-      entry: {
-        target: './src/client/index.tsx',
-      },
-    }),
+    // auto-detect Script/Link in SSR output to add client entries
+    ssrPlugin(),
   ],
 });
