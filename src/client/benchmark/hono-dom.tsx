@@ -1,20 +1,26 @@
 /** @jsxImportSource hono/jsx/dom */
 import { render, useState } from 'hono/jsx/dom';
-import { mutateItems } from './data';
-import type { BenchItem, RunOutcome } from './types';
+import { createMutator } from './data';
+import type { BenchItem, RunOutcome, RunnerOptions } from './types';
 
 type SetState<T> = (value: T | ((current: T) => T)) => void;
+
+const nextPaint = () =>
+  new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
 
 export const runHonoDom = async (
   target: HTMLElement,
   items: BenchItem[],
-  options: { updates: number; mutateCount: number }
+  options: RunnerOptions
 ): Promise<RunOutcome> => {
   target.replaceChildren();
   const mountPoint = document.createElement('div');
   target.appendChild(mountPoint);
 
-  const { updates, mutateCount } = options;
+  const { updates, mutateCount, seed, warmup = 1 } = options;
+  const mutate = createMutator(mutateCount, seed);
 
   // コンポーネント外部から更新できるようにsetStateを保持
   let setItems: SetState<BenchItem[]> | null = null;
@@ -36,8 +42,10 @@ export const runHonoDom = async (
     );
   };
 
+  const mountStart = performance.now();
   render(<HonoBenchApp />, mountPoint);
-  await Promise.resolve();
+  await nextPaint();
+  const mountDuration = performance.now() - mountStart;
 
   // setItems が null でないことを確認
   if (!setItems) {
@@ -47,17 +55,25 @@ export const runHonoDom = async (
   const durations: number[] = [];
   let current = items;
   const setState = setItems as SetState<BenchItem[]>;
+
+  // warmup を挟んで初回コストを計測対象から外す
+  for (let i = 0; i < warmup; i += 1) {
+    current = mutate(current);
+    setState(current);
+    await nextPaint();
+  }
+
   for (let i = 0; i < updates; i += 1) {
-    current = mutateItems(current, mutateCount);
+    current = mutate(current);
     const start = performance.now();
     setState(current);
-    await Promise.resolve();
+    await nextPaint();
     durations.push(performance.now() - start);
   }
 
-  const average = durations.reduce((sum, value) => sum + value, 0) / durations.length;
   return {
-    duration: average,
+    mountDuration,
+    updateDurations: durations,
     cleanup: () => {
       mountPoint.remove();
       target.textContent = '';

@@ -1,27 +1,60 @@
 import { createItems } from './data';
 import { runHonoDom } from './hono-dom';
 import { runVapor } from './vapor';
-import type { BenchItem, RunnerKey, RunnerResult, RunOutcome } from './types';
+import type { BenchItem, RunnerKey, RunnerResult, RunOutcome, RunnerOptions } from './types';
 
 const RUNNERS: Record<
   RunnerKey,
-  (target: HTMLElement, items: BenchItem[], options: { updates: number; mutateCount: number }) => Promise<RunOutcome> | RunOutcome
+  (target: HTMLElement, items: BenchItem[], options: RunnerOptions) => Promise<RunOutcome> | RunOutcome
 > = {
   vapor: runVapor,
   hono: runHonoDom,
 };
 
-const summarize = (durations: number[]): RunnerResult => {
-  const average = durations.reduce((sum, value) => sum + value, 0) / durations.length;
-  const best = Math.min(...durations);
-  const last = durations[durations.length - 1] ?? 0;
-  return { durations, average, best, last };
+const summarizeValues = (values: number[]): RunnerResult['mount'] => {
+  if (values.length === 0) {
+    return { count: 0, average: 0, median: 0, p90: 0, p95: 0, stddev: 0, min: 0, max: 0 };
+  }
+  const sorted = [...values].sort((a, b) => a - b);
+  const count = values.length;
+  const average = values.reduce((sum, value) => sum + value, 0) / count;
+  const variance = values.reduce((sum, value) => sum + (value - average) ** 2, 0) / count;
+  const percentile = (p: number) => {
+    const idx = Math.min(sorted.length - 1, Math.max(0, Math.round((p / 100) * (sorted.length - 1))));
+    return sorted[idx];
+  };
+  return {
+    count,
+    average,
+    median: percentile(50),
+    p90: percentile(90),
+    p95: percentile(95),
+    stddev: Math.sqrt(variance),
+    min: sorted[0],
+    max: sorted[sorted.length - 1],
+  };
 };
 
-const formatStats = (stats: RunnerResult, runs: number, count: number, updates: number) =>
-  `状態更新: avg ${stats.average.toFixed(2)} ms / best ${stats.best.toFixed(2)} ms (runs: ${runs}, updates/run: ${updates}, nodes: ${count})`;
+const formatStats = (stats: RunnerResult, runs: number, count: number, updates: number) => {
+  const mount = `mount avg ${stats.mount.average.toFixed(2)} ms`;
+  const update = `update med ${stats.update.median.toFixed(2)} ms (avg ${stats.update.average.toFixed(
+    2
+  )}, p95 ${stats.update.p95.toFixed(2)}, σ ${stats.update.stddev.toFixed(2)})`;
+  const cleanup = stats.cleanup ? `unmount avg ${stats.cleanup.average.toFixed(2)} ms` : null;
+  const meta = `(runs: ${runs}, updates/run: ${updates}, nodes: ${count})`;
+  return [mount, update, cleanup, meta].filter(Boolean).join(' / ');
+};
 
 const resetCopy = 'まだ計測していません';
+
+const computeSeed = (input: { count: number; runs: number; updates: number; mutateCount: number }) => {
+  let hash = 0x811c9dc5; // FNV offset basis
+  hash = Math.imul(hash ^ input.count, 0x01000193);
+  hash = Math.imul(hash ^ input.runs, 0x01000193);
+  hash = Math.imul(hash ^ input.updates, 0x01000193);
+  hash = Math.imul(hash ^ input.mutateCount, 0x01000193);
+  return (hash >>> 0) || 1;
+};
 
 export const setupBenchmark = () => {
   const page = document.getElementById('benchmark-page');
@@ -45,6 +78,7 @@ export const setupBenchmark = () => {
     hono: document.getElementById('hono-target'),
   } as Record<RunnerKey, HTMLElement | null>;
   const cleanups: Partial<Record<RunnerKey, () => void>> = {};
+  let flipOrder = false;
 
   const updateStatus = (key: RunnerKey, text: string) => {
     const el = statEls[key];
@@ -96,6 +130,8 @@ export const setupBenchmark = () => {
       runs?: number;
       updates?: number;
       mutateCount?: number;
+      seed?: number;
+      warmup?: number;
       items?: BenchItem[];
     }
   ) => {
@@ -105,18 +141,44 @@ export const setupBenchmark = () => {
     const runs = options?.runs ?? base.runs;
     const updates = options?.updates ?? base.updates;
     const mutateCount = options?.mutateCount ?? base.mutateCount;
-    const items = options?.items ?? createItems(count);
+    const baseSeed = options?.seed ?? computeSeed({ count, runs, updates, mutateCount });
+    const warmup = options?.warmup ?? 1;
+    const items = options?.items ?? createItems(count, baseSeed);
 
     cleanups[key]?.();
     cleanups[key] = undefined;
     updateStatus(key, '計測中...');
-    const durations: number[] = [];
+    const updateDurations: number[] = [];
+    const mountDurations: number[] = [];
+    const cleanupDurations: number[] = [];
+    let previousCleanup: (() => void) | undefined;
     for (let i = 0; i < runs; i += 1) {
-      const outcome = await RUNNERS[key](targetEls[key] as HTMLElement, items, { updates, mutateCount });
-      durations.push(outcome.duration);
-      cleanups[key] = outcome.cleanup;
+      // 前回の run を必ず後始末してから次の run を実行する
+      if (previousCleanup) {
+        try {
+          const start = performance.now();
+          previousCleanup();
+          cleanupDurations.push(performance.now() - start);
+        } catch (error) {
+          console.warn('Failed to cleanup previous run', error);
+        }
+      }
+      const outcome = await RUNNERS[key](targetEls[key] as HTMLElement, items, {
+        updates,
+        mutateCount,
+        seed: baseSeed + i,
+        warmup,
+      });
+      updateDurations.push(...outcome.updateDurations);
+      mountDurations.push(outcome.mountDuration);
+      previousCleanup = outcome.cleanup;
     }
-    const stats = summarize(durations);
+    cleanups[key] = previousCleanup;
+    const stats: RunnerResult = {
+      update: summarizeValues(updateDurations),
+      mount: summarizeValues(mountDurations),
+      cleanup: cleanupDurations.length ? summarizeValues(cleanupDurations) : undefined,
+    };
     updateStatus(key, formatStats(stats, runs, count, updates));
     return stats;
   };
@@ -144,10 +206,14 @@ export const setupBenchmark = () => {
     if (busy) return;
     toggleBusy(true);
     const config = getConfig();
-    const sharedItems = createItems(config.count);
+    const baseSeed = computeSeed(config);
+    const sharedItems = createItems(config.count, baseSeed);
     try {
-      await runSuite('vapor', { ...config, items: sharedItems });
-      await runSuite('hono', { ...config, items: sharedItems });
+      const order: RunnerKey[] = flipOrder ? ['hono', 'vapor'] : ['vapor', 'hono'];
+      flipOrder = !flipOrder;
+      for (const key of order) {
+        await runSuite(key, { ...config, items: sharedItems, seed: baseSeed });
+      }
     } catch (error) {
       console.error(error);
       updateStatus('vapor', '計測に失敗しました');

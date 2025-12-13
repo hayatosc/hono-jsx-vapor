@@ -4,16 +4,34 @@ export type BenchItem = {
   value: number;
 };
 
+export type RunnerOptions = {
+  updates: number;
+  mutateCount: number;
+  seed: number;
+  warmup?: number;
+};
+
 export type RunOutcome = {
-  duration: number;
+  mountDuration: number;
+  updateDurations: number[];
   cleanup?: () => void;
 };
 
-export type RunnerResult = {
-  durations: number[];
+export type StatSummary = {
+  count: number;
   average: number;
-  best: number;
-  last: number;
+  median: number;
+  p90: number;
+  p95: number;
+  stddev: number;
+  min: number;
+  max: number;
+};
+
+export type RunnerResult = {
+  mount: StatSummary;
+  update: StatSummary;
+  cleanup?: StatSummary;
 };
 
 export type RunnerKey = 'vapor' | 'hono';

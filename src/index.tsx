@@ -13,9 +13,7 @@ app.get('/', (c) => {
       <header class="hero">
         <p class="eyebrow">Hono + Vue JSX Vapor</p>
         <h1>SSR by hono/jsx</h1>
-        <p class="lead">
-          島（island）として Vue JSX Vapor をマウントしたサンプル。レンダラーの差を見るベンチマークもあります。
-        </p>
+        <p class="lead">島（island）として Vue JSX Vapor をマウントしたサンプル。レンダラーの差を見るベンチマークもあります。</p>
         <nav class="links">
           <a href="/benchmark">レンダリング速度を試す →</a>
         </nav>
@@ -43,13 +41,7 @@ app.get('/benchmark', (c) => {
         </nav>
       </header>
 
-      <section
-        class="controls"
-        id="benchmark-controls"
-        data-default-count="1200"
-        data-default-runs="3"
-        data-default-updates="25"
-      >
+      <section class="controls" id="benchmark-controls" data-default-count="1000" data-default-runs="5" data-default-updates="20">
         <div class="field">
           <label for="bench-count">要素数</label>
           <input id="bench-count" name="bench-count" type="number" min="100" max="20000" step="100" />
@@ -62,8 +54,12 @@ app.get('/benchmark', (c) => {
           <label for="bench-updates">状態更新回数</label>
           <input id="bench-updates" name="bench-updates" type="number" min="1" max="100" step="1" />
         </div>
-        <button type="button" id="bench-run-all">両方を計測する</button>
-        <button type="button" id="bench-reset">結果をリセット</button>
+        <button type="button" id="bench-run-all">
+          両方を計測する
+        </button>
+        <button type="button" id="bench-reset">
+          結果をリセット
+        </button>
         <p class="hint">client-only の軽量比較です。計測値は端末・ブラウザに依存します。</p>
       </section>
 

@@ -1,19 +1,25 @@
 /** @jsxImportSource vue-jsx-vapor */
 // @ts-nocheck - v-for syntax is not recognized by TypeScript but processed by Vue JSX Vapor compiler
-import { createVaporApp, ref, type Ref } from 'vue';
-import { mutateItems } from './data';
-import type { BenchItem, RunOutcome } from './types';
+import { createVaporApp, nextTick, ref, type Ref } from 'vue';
+import { createMutator } from './data';
+import type { BenchItem, RunOutcome, RunnerOptions } from './types';
+
+const nextPaint = () =>
+  new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
 
 export const runVapor = async (
   target: HTMLElement,
   items: BenchItem[],
-  options: { updates: number; mutateCount: number }
+  options: RunnerOptions
 ): Promise<RunOutcome> => {
   target.replaceChildren();
   const mountPoint = document.createElement('div');
   target.appendChild(mountPoint);
 
-  const { updates, mutateCount } = options;
+  const { updates, mutateCount, seed, warmup = 1 } = options;
+  const mutate = createMutator(mutateCount, seed);
 
   // コンポーネント外部から更新できるようにrefを保持
   let itemsRef: Ref<BenchItem[]> | null = null;
@@ -34,8 +40,10 @@ export const runVapor = async (
   };
 
   const app = createVaporApp(VaporBenchApp);
+  const mountStart = performance.now();
   app.mount(mountPoint);
-  await Promise.resolve();
+  await nextPaint();
+  const mountDuration = performance.now() - mountStart;
 
   // itemsRef が null でないことを確認
   if (!itemsRef) {
@@ -45,20 +53,35 @@ export const runVapor = async (
   const durations: number[] = [];
   let current = items;
   const stateRef = itemsRef as Ref<BenchItem[]>;
+
+  // warmup を挟んで初回コストを計測対象から外す
+  for (let i = 0; i < warmup; i += 1) {
+    current = mutate(current);
+    stateRef.value = current;
+    await nextTick();
+    await nextPaint();
+  }
+
   for (let i = 0; i < updates; i += 1) {
-    current = mutateItems(current, mutateCount);
+    current = mutate(current);
     const start = performance.now();
     stateRef.value = current;
-    await Promise.resolve();
+    await nextTick();
+    await nextPaint();
     durations.push(performance.now() - start);
   }
 
-  const average = durations.reduce((sum, value) => sum + value, 0) / durations.length;
   return {
-    duration: average,
+    mountDuration,
+    updateDurations: durations,
     cleanup: () => {
       try {
-        app.unmount();
+        if (mountPoint.isConnected) {
+          app.unmount();
+        } else {
+          // already removed; avoid double-unmount errors
+          app.unmount?.();
+        }
       } catch (error) {
         console.warn('Vapor unmount failed', error);
       }
