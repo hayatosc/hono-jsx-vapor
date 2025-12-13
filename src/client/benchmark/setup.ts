@@ -1,7 +1,9 @@
-import { createItems } from './data';
-import { runHonoDom } from './hono-dom';
+import { runHonoDom } from './runners/hono-dom';
+import { runVapor } from './runners/vapor';
 import type { BenchItem, RunnerCase, RunnerKey, RunnerOptions, RunnerResult, RunOutcome } from './types';
-import { runVapor } from './vapor';
+import { createItems } from './utils/data';
+import { computeSeed, formatStats, summarizeValues } from './utils/stats';
+import { clearRunner, clearTargets, coerceNumber, RESET_MESSAGE, runWithBusyGuard, updateStatus, updateStatuses } from './utils/ui';
 
 type BenchConfig = {
   count: number;
@@ -23,51 +25,6 @@ const RUNNERS: Record<RunnerKey, (target: HTMLElement, items: BenchItem[], optio
 };
 
 const CASES: RunnerCase[] = ['update', 'splice'];
-
-const summarizeValues = (values: number[]): RunnerResult['mount'] => {
-  if (values.length === 0) {
-    return { count: 0, average: 0, median: 0, p90: 0, p95: 0, stddev: 0, min: 0, max: 0 };
-  }
-  const sorted = [...values].sort((a, b) => a - b);
-  const count = values.length;
-  const average = values.reduce((sum, value) => sum + value, 0) / count;
-  const variance = values.reduce((sum, value) => sum + (value - average) ** 2, 0) / count;
-  const percentile = (p: number) => {
-    const idx = Math.min(sorted.length - 1, Math.max(0, Math.round((p / 100) * (sorted.length - 1))));
-    return sorted[idx];
-  };
-  return {
-    count,
-    average,
-    median: percentile(50),
-    p90: percentile(90),
-    p95: percentile(95),
-    stddev: Math.sqrt(variance),
-    min: sorted[0],
-    max: sorted[sorted.length - 1],
-  };
-};
-
-const formatStats = (stats: RunnerResult, runs: number, count: number, updates: number, operationLabel: string) => {
-  const mount = `mount avg ${stats.mount.average.toFixed(2)} ms`;
-  const update = `${operationLabel} med ${stats.update.median.toFixed(2)} ms (avg ${stats.update.average.toFixed(2)}, p95 ${stats.update.p95.toFixed(
-    2
-  )}, σ ${stats.update.stddev.toFixed(2)})`;
-  const cleanup = stats.cleanup ? `unmount avg ${stats.cleanup.average.toFixed(2)} ms` : null;
-  const meta = `(runs: ${runs}, updates/run: ${updates}, nodes: ${count})`;
-  return [mount, update, cleanup, meta].filter(Boolean).join(' / ');
-};
-
-const resetCopy = 'まだ計測していません';
-
-const computeSeed = (input: BenchConfig) => {
-  let hash = 0x811c9dc5; // FNV offset basis
-  hash = Math.imul(hash ^ input.count, 0x01000193);
-  hash = Math.imul(hash ^ input.runs, 0x01000193);
-  hash = Math.imul(hash ^ input.updates, 0x01000193);
-  hash = Math.imul(hash ^ input.mutateCount, 0x01000193);
-  return hash >>> 0 || 1;
-};
 
 export const setupBenchmark = () => {
   const page = document.getElementById('benchmark-page');
@@ -103,56 +60,7 @@ export const setupBenchmark = () => {
 
   const cleanups: Partial<Record<RunnerKey, () => void>> = {};
   let flipOrder = false;
-
-  const updateStatus = (key: RunnerKey, runCase: RunnerCase, text: string) => {
-    const el = statEls[key][runCase];
-    if (el) el.textContent = text;
-  };
-
-  const updateStatuses = (text: string, runCases: RunnerCase[] = CASES) => {
-    runnerKeys.forEach((key) => runCases.forEach((runCase) => updateStatus(key, runCase, text)));
-  };
-
-  const clearRunner = (key: RunnerKey) => {
-    cleanups[key]?.();
-    cleanups[key] = undefined;
-    targetEls[key]?.replaceChildren();
-  };
-
-  const clearTargets = () => {
-    runnerKeys.forEach(clearRunner);
-    updateStatuses(resetCopy);
-  };
-
-  let busy = false;
-  const toggleBusy = (state: boolean) => {
-    busy = state;
-    const buttons = page.querySelectorAll<HTMLButtonElement>('button');
-    buttons.forEach((button) => {
-      button.disabled = state;
-      button.setAttribute('aria-busy', state ? 'true' : 'false');
-    });
-  };
-
-  const runWithBusyGuard = async (task: () => Promise<void>, onError: (error: unknown) => void) => {
-    if (busy) return;
-    toggleBusy(true);
-    try {
-      await task();
-    } catch (error) {
-      onError(error);
-    } finally {
-      toggleBusy(false);
-    }
-  };
-
-  const coerceNumber = (value: string | null | undefined, fallback: number) => {
-    if (value === null || value === undefined) return fallback;
-    const trimmed = value.trim();
-    if (!trimmed) return fallback;
-    const parsed = Number(trimmed);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  };
+  const busyState = { value: false };
 
   const getConfig = (): BenchConfig => ({
     count: Math.max(100, coerceNumber(countInput?.value, defaultCount)),
@@ -182,10 +90,10 @@ export const setupBenchmark = () => {
     const warmup = options?.warmup ?? 1;
     const items = options?.items ?? createItems(mergedConfig.count, baseSeed);
 
-    // 前回の suite が中断した場合などの保険として先に掃除しておく（この時間は計測に含めない）
+    // Clean up any previous suite runs before starting (this time is not included in measurements)
     cleanups[key]?.();
     cleanups[key] = undefined;
-    updateStatus(key, runCase, '計測中...');
+    updateStatus(statEls, key, runCase, '計測中...');
     const updateDurations: number[] = [];
     const mountDurations: number[] = [];
     const cleanupDurations: number[] = [];
@@ -230,6 +138,7 @@ export const setupBenchmark = () => {
       cleanup: cleanupDurations.length ? summarizeValues(cleanupDurations) : undefined,
     };
     updateStatus(
+      statEls,
       key,
       runCase,
       formatStats(stats, mergedConfig.runs, mergedConfig.count, mergedConfig.updates, runCase === 'splice' ? 'splice' : 'update')
@@ -256,12 +165,14 @@ export const setupBenchmark = () => {
     const runCase = (button.getAttribute('data-case') as RunnerCase | null) ?? 'update';
     button.addEventListener('click', () =>
       runWithBusyGuard(
+        page,
+        busyState,
         async () => {
           await runSuite(key, { case: runCase });
         },
         (error) => {
           console.error(error);
-          updateStatus(key, runCase, '計測に失敗しました');
+          updateStatus(statEls, key, runCase, '計測に失敗しました');
         }
       )
     );
@@ -270,12 +181,14 @@ export const setupBenchmark = () => {
   const runAllButton = document.getElementById('bench-run-all');
   runAllButton?.addEventListener('click', () =>
     runWithBusyGuard(
+      page,
+      busyState,
       async () => {
         await runBatch(['update', 'splice']);
       },
       (error) => {
         console.error(error);
-        updateStatuses('計測に失敗しました', ['update', 'splice']);
+        updateStatuses(statEls, runnerKeys, ['update', 'splice'], '計測に失敗しました');
       }
     )
   );
@@ -283,19 +196,21 @@ export const setupBenchmark = () => {
   const runAllSpliceButton = document.getElementById('bench-run-all-splice');
   runAllSpliceButton?.addEventListener('click', () =>
     runWithBusyGuard(
+      page,
+      busyState,
       async () => {
         await runBatch(['splice']);
       },
       (error) => {
         console.error(error);
-        updateStatuses('計測に失敗しました', ['splice']);
+        updateStatuses(statEls, runnerKeys, ['splice'], '計測に失敗しました');
       }
     )
   );
 
   const resetButton = document.getElementById('bench-reset');
-  resetButton?.addEventListener('click', () => clearTargets());
+  resetButton?.addEventListener('click', () => clearTargets(targetEls, cleanups, statEls, runnerKeys, CASES));
 
-  // 初期状態
-  clearTargets();
+  // Initialize with clean state
+  clearTargets(targetEls, cleanups, statEls, runnerKeys, CASES);
 };

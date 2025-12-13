@@ -1,7 +1,9 @@
 /** @jsxImportSource hono/jsx */
 import { Hono } from 'hono';
 import { Script } from 'vite-ssr-components/hono';
-import { renderer } from './renderer';
+import { Button } from './server/components/Button';
+import { Input } from './server/components/Input';
+import { renderer } from './server/renderer';
 
 const app = new Hono();
 
@@ -62,57 +64,26 @@ app.get('/benchmark', (c) => {
           <label class="block text-[13px] text-slate-300" for="bench-count">
             要素数
           </label>
-          <input
-            class="w-full rounded-lg border border-slate-200/50 bg-white/10 px-2.5 py-2 text-slate-50 outline-none focus:ring-2 focus:ring-cyan-300/60 focus:border-slate-200/80"
-            id="bench-count"
-            name="bench-count"
-            type="number"
-            min="100"
-            max="20000"
-            step="100"
-          />
+          <Input id="bench-count" name="bench-count" type="number" min="100" max="20000" step="100" />
         </div>
         <div class="space-y-1.5">
           <label class="block text-[13px] text-slate-300" for="bench-runs">
             試行回数
           </label>
-          <input
-            class="w-full rounded-lg border border-slate-200/50 bg-white/10 px-2.5 py-2 text-slate-50 outline-none focus:ring-2 focus:ring-cyan-300/60 focus:border-slate-200/80"
-            id="bench-runs"
-            name="bench-runs"
-            type="number"
-            min="1"
-            max="10"
-          />
+          <Input id="bench-runs" name="bench-runs" type="number" min="1" max="10" />
         </div>
         <div class="space-y-1.5">
           <label class="block text-[13px] text-slate-300" for="bench-updates">
             状態更新回数
           </label>
-          <input
-            class="w-full rounded-lg border border-slate-200/50 bg-white/10 px-2.5 py-2 text-slate-50 outline-none focus:ring-2 focus:ring-cyan-300/60 focus:border-slate-200/80"
-            id="bench-updates"
-            name="bench-updates"
-            type="number"
-            min="1"
-            max="100"
-            step="1"
-          />
+          <Input id="bench-updates" name="bench-updates" type="number" min="1" max="100" step="1" />
         </div>
-        <button
-          type="button"
-          id="bench-run-all"
-          class="w-full rounded-xl px-3.5 py-2.5 bg-linear-to-r from-cyan-400 to-indigo-500 text-slate-50 font-semibold shadow-sm transition duration-150 ease-out hover:-translate-y-px hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <Button type="button" id="bench-run-all" class="w-full" variant="primary">
           両方を計測する
-        </button>
-        <button
-          type="button"
-          id="bench-reset"
-          class="w-full rounded-xl px-3.5 py-2.5 bg-white/10 text-slate-200 border border-slate-200/20 font-semibold transition duration-150 ease-out hover:-translate-y-px hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        </Button>
+        <Button type="button" id="bench-reset" class="w-full" variant="ghost">
           結果をリセット
-        </button>
+        </Button>
         <p class="col-span-full text-[13px] text-slate-300 m-0">client-only の軽量比較です。計測値は端末・ブラウザに依存します。</p>
       </section>
 
@@ -130,27 +101,17 @@ app.get('/benchmark', (c) => {
             <div id="vapor-stats-splice">追加/削除: まだ計測していません</div>
           </div>
           <div
-            class="h-105 overflow-y-auto rounded-lg border border-dashed border-slate-900/10 p-2.5 bg-linear-to-b from-slate-900/5 to-white/60"
+            class="h-105 overflow-y-auto rounded-lg border border-dashed border-slate-900/10 p-2.5 bg-slate-50"
             id="vapor-target"
             aria-live="polite"
           ></div>
           <div class="flex flex-wrap gap-2">
-            <button
-              type="button"
-              class="bench-runner self-start rounded-xl px-3.5 py-2.5 bg-slate-900 text-slate-50 font-semibold shadow-sm transition duration-150 ease-out hover:-translate-y-px hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              data-runner="vapor"
-              data-case="update"
-            >
+            <Button type="button" class="bench-runner self-start" variant="primary" data-runner="vapor" data-case="update">
               Vapor (状態更新を計測)
-            </button>
-            <button
-              type="button"
-              class="bench-runner self-start rounded-xl px-3.5 py-2.5 bg-white text-slate-900 font-semibold shadow-sm transition duration-150 ease-out hover:-translate-y-px hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              data-runner="vapor"
-              data-case="splice"
-            >
+            </Button>
+            <Button type="button" class="bench-runner self-start" variant="secondary" data-runner="vapor" data-case="splice">
               Vapor (追加/削除を計測)
-            </button>
+            </Button>
           </div>
         </article>
 
@@ -167,31 +128,21 @@ app.get('/benchmark', (c) => {
             <div id="hono-stats-splice">追加/削除: まだ計測していません</div>
           </div>
           <div
-            class="h-105 overflow-y-auto rounded-lg border border-dashed border-slate-900/10 p-2.5 bg-linear-to-b from-slate-900/5 to-white/60"
+            class="h-105 overflow-y-auto rounded-lg border border-dashed border-slate-900/10 p-2.5 bg-slate-50"
             id="hono-target"
             aria-live="polite"
           ></div>
           <div class="flex flex-wrap gap-2">
-            <button
-              type="button"
-              class="bench-runner self-start rounded-xl px-3.5 py-2.5 bg-slate-900 text-slate-50 font-semibold shadow-sm transition duration-150 ease-out hover:-translate-y-px hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              data-runner="hono"
-              data-case="update"
-            >
+            <Button type="button" class="bench-runner self-start" variant="primary" data-runner="hono" data-case="update">
               hono/jsx/dom (状態更新を計測)
-            </button>
-            <button
-              type="button"
-              class="bench-runner self-start rounded-xl px-3.5 py-2.5 bg-white text-slate-900 font-semibold shadow-sm transition duration-150 ease-out hover:-translate-y-px hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              data-runner="hono"
-              data-case="splice"
-            >
+            </Button>
+            <Button type="button" class="bench-runner self-start" variant="secondary" data-runner="hono" data-case="splice">
               hono/jsx/dom (追加/削除を計測)
-            </button>
+            </Button>
           </div>
         </article>
       </section>
-      <Script type="module" src="/src/client/benchmark/entry.tsx" />
+      <Script type="module" src="/src/client/benchmark/index.ts" />
     </main>
   );
 });
