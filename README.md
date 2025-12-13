@@ -16,6 +16,12 @@ bun run dev
 
 http://localhost:5173 でアクセス。
 
+### ベンチマークを試す
+
+- `bun run preview` でサーバーを起動し、`http://localhost:5173/benchmark` を開く
+- Vue JSX Vapor と hono/jsx/dom が同じデータセットをブラウザで描画し、`performance.now()` でクライアント側の実行時間を計測
+- 要素数と試行回数は画面上の入力で変更可能（デフォルト 1,200 件、3 回）
+
 ## ビルド & プレビュー
 
 ```bash
