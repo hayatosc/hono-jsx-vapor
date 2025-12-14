@@ -3,7 +3,7 @@ import { runVapor } from './runners/vapor';
 import type { BenchItem, RunnerCase, RunnerKey, RunnerOptions, RunnerResult, RunOutcome } from './types';
 import { createItems } from './utils/data';
 import { computeSeed, formatStats, summarizeValues } from './utils/stats';
-import { clearRunner, clearTargets, coerceNumber, RESET_MESSAGE, runWithBusyGuard, updateStatus, updateStatuses } from './utils/ui';
+import { clearTargets, coerceNumber, runWithBusyGuard, updateStatus, updateStatuses } from './utils/ui';
 
 type BenchConfig = {
   count: number;
