@@ -193,21 +193,6 @@ export const setupBenchmark = () => {
     )
   );
 
-  const runAllSpliceButton = document.getElementById('bench-run-all-splice');
-  runAllSpliceButton?.addEventListener('click', () =>
-    runWithBusyGuard(
-      page,
-      busyState,
-      async () => {
-        await runBatch(['splice']);
-      },
-      (error) => {
-        console.error(error);
-        updateStatuses(statEls, runnerKeys, ['splice'], '計測に失敗しました');
-      }
-    )
-  );
-
   const resetButton = document.getElementById('bench-reset');
   resetButton?.addEventListener('click', () => clearTargets(targetEls, cleanups, statEls, runnerKeys, CASES));
 
