@@ -11,23 +11,16 @@ app.use(renderer);
 
 app.get('/', (c) => {
   return c.render(
-    <main class="max-w-260uto px-4 sm:px-5 pt-6 sm:pt-8 pb-12 sm:pb-16 space-y-7">
-      <header class="bg-white border border-slate-900/10 rounded-[20px] p-7 shadow-[0_30px_60px_rgba(15,23,42,0.05)] space-y-3">
-        <p class="text-xs uppercase tracking-widest text-slate-500 mb-1.5 mt-0">Hono + Vue JSX Vapor</p>
-        <h1 class="text-3xl font-bold tracking-[-0.02em] mb-3 mt-0">SSR by hono/jsx</h1>
-        <p class="text-slate-600 mt-0">島（island）として Vue JSX Vapor をマウントしたサンプル。レンダラーの差を見るベンチマークもあります。</p>
-        <nav class="flex items-center gap-3.5 mt-4">
-          <a
-            href="/benchmark"
-            class="inline-flex items-center gap-1 font-medium text-slate-900 border-b border-slate-900/20 no-underline hover:border-slate-900/50"
-          >
-            レンダリング速度を試す →
-          </a>
+    <main>
+      <header class="mx-2">
+        <h1>Hono + Vue JSX Vapor</h1>
+        <nav>
+          <a href="/benchmark">ベンチマーク →</a>
         </nav>
       </header>
-      <section class="mt-7 p-5 rounded-xl border border-dashed border-slate-900/10 bg-white space-y-2">
-        <p class="text-sm text-slate-600 mb-2.5 mt-0">Vue JSX Vapor island</p>
-        <div id="counter-island" data-initial="0" class="inline-flex items-center justify-center min-h-12"></div>
+      <section class="mx-2 my-4">
+        <p>Vue JSX Vapor island</p>
+        <div id="counter-island" data-initial="0"></div>
       </section>
       <Script type="module" src="/src/client/index.tsx" />
     </main>
@@ -39,7 +32,7 @@ app.get('/benchmark', (c) => {
     <main id="benchmark-page" class="max-w-260 mx-auto px-4 sm:px-5 pt-6 sm:pt-8 pb-12 sm:pb-16 space-y-6">
       <header class="bg-white border border-slate-900/10 rounded-[20px] p-7 shadow-[0_30px_60px_rgba(15,23,42,0.05)] space-y-3">
         <p class="text-xs uppercase tracking-widest text-slate-500 mb-1.5 mt-0">Renderer benchmark</p>
-        <h1 class="text-3xl font-bold tracking-[-0.02em] mb-3 mt-0">Vue JSX Vapor vs hono/jsx/dom</h1>
+        <h1 class="text-3xl font-bold tracking-[-0.02em] mb-3 mt-0">vue-jsx-vapor vs hono/jsx/dom</h1>
         <p class="text-slate-600 mt-0">
           同じ1000件超のリストをそれぞれのレンダラーで生成し、ブラウザの performance.now() を用いてクライアント側の描画時間を測定します。
         </p>
@@ -78,7 +71,7 @@ app.get('/benchmark', (c) => {
           </label>
           <Input id="bench-updates" name="bench-updates" type="number" min="1" max="100" step="1" />
         </div>
-        <Button type="button" id="bench-run-all" class="w-full" variant="primary">
+        <Button type="button" id="bench-run-all" class="w-full" variant="ghost">
           両方を計測する
         </Button>
         <Button type="button" id="bench-reset" class="w-full" variant="ghost">
@@ -94,7 +87,7 @@ app.get('/benchmark', (c) => {
         >
           <header>
             <p class="text-xs uppercase tracking-widest text-slate-500 mb-1.5 mt-0">Client</p>
-            <h2 class="text-2xl font-semibold tracking-[-0.02em] mb-3 mt-0">Vue JSX Vapor</h2>
+            <h2 class="text-2xl font-semibold tracking-[-0.02em] mb-3 mt-0">vue-jsx-vapor</h2>
           </header>
           <div class="grid gap-1.5 rounded-lg bg-slate-900 p-3 text-slate-200 font-mono text-sm">
             <div id="vapor-stats-update">状態更新: まだ計測していません</div>
@@ -107,10 +100,10 @@ app.get('/benchmark', (c) => {
           ></div>
           <div class="flex flex-wrap gap-2">
             <Button type="button" class="bench-runner self-start" variant="primary" data-runner="vapor" data-case="update">
-              Vapor (状態更新を計測)
+              Vapor (状態更新)
             </Button>
             <Button type="button" class="bench-runner self-start" variant="secondary" data-runner="vapor" data-case="splice">
-              Vapor (追加/削除を計測)
+              Vapor (追加/削除)
             </Button>
           </div>
         </article>
@@ -134,10 +127,10 @@ app.get('/benchmark', (c) => {
           ></div>
           <div class="flex flex-wrap gap-2">
             <Button type="button" class="bench-runner self-start" variant="primary" data-runner="hono" data-case="update">
-              hono/jsx/dom (状態更新を計測)
+              hono/jsx (状態更新)
             </Button>
             <Button type="button" class="bench-runner self-start" variant="secondary" data-runner="hono" data-case="splice">
-              hono/jsx/dom (追加/削除を計測)
+              hono/jsx (追加/削除)
             </Button>
           </div>
         </article>

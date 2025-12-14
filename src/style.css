@@ -1,16 +1,15 @@
 @import 'tailwindcss';
 
 :root {
-  font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', system-ui, -apple-system, sans-serif;
   color: #0f172a;
-  background: radial-gradient(circle at 20% 20%, #eef2ff, #f8fafc 32%), #f8fafc;
+  background: #f8fafc;
 }
 
-* {
-  box-sizing: border-box;
+h1 {
+  @apply text-3xl font-bold py-4;
 }
 
-body {
-  margin: 0;
-  padding: 0;
+a {
+  @apply text-blue-600 hover:underline;
 }
