@@ -34,7 +34,7 @@ app.get('/benchmark', (c) => {
         <p class="text-xs uppercase tracking-widest text-slate-500 mb-1.5 mt-0">Renderer benchmark</p>
         <h1 class="text-3xl font-bold tracking-[-0.02em] mb-3 mt-0">vue-jsx-vapor vs hono/jsx/dom</h1>
         <p class="text-slate-600 mt-0">
-          同じ1000件超のリストをそれぞれのレンダラーで生成し、ブラウザの performance.now() を用いてクライアント側の描画時間を測定します。
+          同じ複数件のリストをそれぞれのレンダラーで生成し、ブラウザの performance.now() を用いてクライアント側の描画時間を測定します。
         </p>
         <nav class="flex items-center gap-3.5 mt-4">
           <a
