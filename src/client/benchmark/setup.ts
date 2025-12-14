@@ -31,8 +31,8 @@ export const setupBenchmark = () => {
   if (!page) return;
 
   const controls = document.getElementById('benchmark-controls');
-  const defaultCount = Number(controls?.getAttribute('data-default-count') ?? 1200);
-  const defaultRuns = Number(controls?.getAttribute('data-default-runs') ?? 3);
+  const defaultCount = Number(controls?.getAttribute('data-default-count') ?? 1000);
+  const defaultRuns = Number(controls?.getAttribute('data-default-runs') ?? 5);
   const defaultUpdates = Number(controls?.getAttribute('data-default-updates') ?? 20);
 
   const countInput = document.getElementById('bench-count') as HTMLInputElement | null;
