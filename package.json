@@ -11,13 +11,16 @@
   },
   "dependencies": {
     "hono": "^4.10.8",
+    "@vue/server-renderer": "3.6.0-alpha.7",
     "vue": "3.6.0-alpha.7",
     "vue-jsx-vapor": "^3.0.4"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.2.3",
     "@cloudflare/workers-types": "^4.20251213.0",
+    "@tailwindcss/vite": "^4.1.18",
     "@typescript/native-preview": "^7.0.0-dev.20251212.1",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^7.2.7",
     "vite-ssr-components": "^0.5.1",

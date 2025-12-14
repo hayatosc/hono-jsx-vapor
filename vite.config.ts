@@ -1,4 +1,5 @@
 import { cloudflare } from '@cloudflare/vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import ssrPlugin from 'vite-ssr-components/plugin';
 import VueJsxVapor from 'vue-jsx-vapor/vite';
@@ -9,13 +10,13 @@ export default defineConfig({
     jsxImportSource: 'hono/jsx',
   },
   plugins: [
-    // Vue JSX Vapor（client側JSXのみトランスパイル）
+    tailwindcss(),
     VueJsxVapor({
       macros: true,
-      include: /src\/client\//,
+      include: [/src\/client\/.*\.[tj]sx$/],
+      exclude: /hono-dom/,
     }),
     cloudflare(),
-    // auto-detect Script/Link in SSR output to add client entries
     ssrPlugin(),
   ],
 });
