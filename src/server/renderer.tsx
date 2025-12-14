@@ -1,6 +1,6 @@
 /** @jsxImportSource hono/jsx */
-import { jsxRenderer } from 'hono/jsx-renderer';
-import { Link, ViteClient } from 'vite-ssr-components/hono';
+import { jsxRenderer } from 'hono/jsx-renderer'
+import { Link, ViteClient } from 'vite-ssr-components/hono'
 
 export const renderer = jsxRenderer(({ children }) => {
   return (
@@ -14,5 +14,5 @@ export const renderer = jsxRenderer(({ children }) => {
       </head>
       <body>{children}</body>
     </html>
-  );
-});
+  )
+})

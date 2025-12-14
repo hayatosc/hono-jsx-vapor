@@ -7,7 +7,10 @@
     "preview": "$npm_execpath run build && vite preview",
     "deploy": "$npm_execpath run build && wrangler deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-    "typecheck": "tsgo -p tsconfig.server.json --noEmit && tsgo -p tsconfig.client.json --noEmit"
+    "typecheck": "tsgo -p tsconfig.server.json --noEmit && tsgo -p tsconfig.client.json --noEmit",
+    "format": "oxfmt --write .",
+    "lint": "oxlint --fix .",
+    "check": "$npm_execpath run typecheck && $npm_execpath run lint && $npm_execpath run format"
   },
   "dependencies": {
     "hono": "^4.10.8",
@@ -20,6 +23,9 @@
     "@cloudflare/workers-types": "^4.20251213.0",
     "@tailwindcss/vite": "^4.1.18",
     "@typescript/native-preview": "^7.0.0-dev.20251212.1",
+    "oxfmt": "^0.17.0",
+    "oxlint": "^1.32.0",
+    "oxlint-tsgolint": "^0.9.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^7.2.7",

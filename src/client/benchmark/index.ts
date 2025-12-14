@@ -1,3 +1,3 @@
-import { setupBenchmark } from './setup';
+import { setupBenchmark } from './setup'
 
-setupBenchmark();
+setupBenchmark()

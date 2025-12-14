@@ -1,7 +1,12 @@
 @import 'tailwindcss';
 
 :root {
-  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Noto Sans JP',
+    'Hiragino Kaku Gothic ProN',
+    system-ui,
+    -apple-system,
+    sans-serif;
   color: #0f172a;
   background: #f8fafc;
 }

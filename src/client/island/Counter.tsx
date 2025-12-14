@@ -1,7 +1,7 @@
-import { ref } from 'vue';
+import { ref } from 'vue'
 
 export default function Counter() {
-  const count = ref(0);
+  const count = ref(0)
   return (
     <button
       type="button"
@@ -10,5 +10,5 @@ export default function Counter() {
     >
       count: {count.value}
     </button>
-  );
+  )
 }

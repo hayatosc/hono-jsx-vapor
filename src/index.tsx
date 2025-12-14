@@ -1,13 +1,13 @@
 /** @jsxImportSource hono/jsx */
-import { Hono } from 'hono';
-import { Script } from 'vite-ssr-components/hono';
-import { Button } from './server/components/Button';
-import { Input } from './server/components/Input';
-import { renderer } from './server/renderer';
+import { Hono } from 'hono'
+import { Script } from 'vite-ssr-components/hono'
+import { Button } from './server/components/Button'
+import { Input } from './server/components/Input'
+import { renderer } from './server/renderer'
 
-const app = new Hono();
+const app = new Hono()
 
-app.use(renderer);
+app.use(renderer)
 
 app.get('/', (c) => {
   return c.render(
@@ -23,18 +23,26 @@ app.get('/', (c) => {
         <div id="counter-island" data-initial="0"></div>
       </section>
       <Script type="module" src="/src/client/index.tsx" />
-    </main>
-  );
-});
+    </main>,
+  )
+})
 
 app.get('/benchmark', (c) => {
   return c.render(
-    <main id="benchmark-page" class="max-w-260 mx-auto px-4 sm:px-5 pt-6 sm:pt-8 pb-12 sm:pb-16 space-y-6">
+    <main
+      id="benchmark-page"
+      class="max-w-260 mx-auto px-4 sm:px-5 pt-6 sm:pt-8 pb-12 sm:pb-16 space-y-6"
+    >
       <header class="bg-white border border-slate-900/10 rounded-[20px] p-7 shadow-[0_30px_60px_rgba(15,23,42,0.05)] space-y-3">
-        <p class="text-xs uppercase tracking-widest text-slate-500 mb-1.5 mt-0">Renderer benchmark</p>
-        <h1 class="text-3xl font-bold tracking-[-0.02em] mb-3 mt-0">vue-jsx-vapor vs hono/jsx/dom</h1>
+        <p class="text-xs uppercase tracking-widest text-slate-500 mb-1.5 mt-0">
+          Renderer benchmark
+        </p>
+        <h1 class="text-3xl font-bold tracking-[-0.02em] mb-3 mt-0">
+          vue-jsx-vapor vs hono/jsx/dom
+        </h1>
         <p class="text-slate-600 mt-0">
-          同じ複数件のリストをそれぞれのレンダラーで生成し、ブラウザの performance.now() を用いてクライアント側の描画時間を測定します。
+          同じ複数件のリストをそれぞれのレンダラーで生成し、ブラウザの performance.now()
+          を用いてクライアント側の描画時間を測定します。
         </p>
         <nav class="flex items-center gap-3.5 mt-4">
           <a
@@ -57,7 +65,14 @@ app.get('/benchmark', (c) => {
           <label class="block text-[13px] text-slate-300" for="bench-count">
             要素数
           </label>
-          <Input id="bench-count" name="bench-count" type="number" min="100" max="20000" step="100" />
+          <Input
+            id="bench-count"
+            name="bench-count"
+            type="number"
+            min="100"
+            max="20000"
+            step="100"
+          />
         </div>
         <div class="space-y-1.5">
           <label class="block text-[13px] text-slate-300" for="bench-runs">
@@ -77,7 +92,9 @@ app.get('/benchmark', (c) => {
         <Button type="button" id="bench-reset" class="w-full" variant="ghost">
           結果をリセット
         </Button>
-        <p class="col-span-full text-[13px] text-slate-300 m-0">client-only の軽量比較です。計測値は端末・ブラウザに依存します。</p>
+        <p class="col-span-full text-[13px] text-slate-300 m-0">
+          client-only の軽量比較です。計測値は端末・ブラウザに依存します。
+        </p>
       </section>
 
       <section class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4 mt-5">
@@ -99,10 +116,22 @@ app.get('/benchmark', (c) => {
             aria-live="polite"
           ></div>
           <div class="flex flex-wrap gap-2">
-            <Button type="button" class="bench-runner self-start" variant="primary" data-runner="vapor" data-case="update">
+            <Button
+              type="button"
+              class="bench-runner self-start"
+              variant="primary"
+              data-runner="vapor"
+              data-case="update"
+            >
               Vapor (状態更新)
             </Button>
-            <Button type="button" class="bench-runner self-start" variant="secondary" data-runner="vapor" data-case="splice">
+            <Button
+              type="button"
+              class="bench-runner self-start"
+              variant="secondary"
+              data-runner="vapor"
+              data-case="splice"
+            >
               Vapor (追加/削除)
             </Button>
           </div>
@@ -126,18 +155,30 @@ app.get('/benchmark', (c) => {
             aria-live="polite"
           ></div>
           <div class="flex flex-wrap gap-2">
-            <Button type="button" class="bench-runner self-start" variant="primary" data-runner="hono" data-case="update">
+            <Button
+              type="button"
+              class="bench-runner self-start"
+              variant="primary"
+              data-runner="hono"
+              data-case="update"
+            >
               hono/jsx (状態更新)
             </Button>
-            <Button type="button" class="bench-runner self-start" variant="secondary" data-runner="hono" data-case="splice">
+            <Button
+              type="button"
+              class="bench-runner self-start"
+              variant="secondary"
+              data-runner="hono"
+              data-case="splice"
+            >
               hono/jsx (追加/削除)
             </Button>
           </div>
         </article>
       </section>
       <Script type="module" src="/src/client/benchmark/index.ts" />
-    </main>
-  );
-});
+    </main>,
+  )
+})
 
-export default app;
+export default app
