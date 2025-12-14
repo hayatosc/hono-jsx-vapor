@@ -22,48 +22,6 @@ export const measureMount = async (
 };
 
 /**
- * Execute warmup cycles to eliminate initial rendering costs from measurements.
- */
-export const runWarmup = async <TState>(
-  warmupCount: number,
-  state: TState,
-  mutateFn: (current: BenchItem[]) => BenchItem[],
-  updateFn: (state: TState, items: BenchItem[]) => void | Promise<void>,
-  getCurrentItems: (state: TState) => BenchItem[]
-): Promise<void> => {
-  let current = getCurrentItems(state);
-  for (let i = 0; i < warmupCount; i++) {
-    current = mutateFn(current);
-    await updateFn(state, current);
-    await nextPaint();
-  }
-};
-
-/**
- * Execute measured update cycles and return durations.
- */
-export const runMeasuredUpdates = async <TState>(
-  updateCount: number,
-  state: TState,
-  mutateFn: (current: BenchItem[]) => BenchItem[],
-  updateFn: (state: TState, items: BenchItem[]) => void | Promise<void>,
-  getCurrentItems: (state: TState) => BenchItem[]
-): Promise<number[]> => {
-  const durations: number[] = [];
-  let current = getCurrentItems(state);
-
-  for (let i = 0; i < updateCount; i++) {
-    current = mutateFn(current);
-    const start = performance.now();
-    await updateFn(state, current);
-    await nextPaint();
-    durations.push(performance.now() - start);
-  }
-
-  return durations;
-};
-
-/**
  * Safe cleanup helper that suppresses known harmless errors.
  */
 export const safeCleanup = (
