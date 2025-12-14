@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "hono": "^4.10.8",
+    "@vue/server-renderer": "3.6.0-alpha.7",
     "vue": "3.6.0-alpha.7",
     "vue-jsx-vapor": "^3.0.4"
   },
