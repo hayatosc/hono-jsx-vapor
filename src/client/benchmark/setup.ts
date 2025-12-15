@@ -37,7 +37,7 @@ const RUNNERS: Record<
   (
     target: HTMLElement,
     items: BenchItem[],
-    options: RunnerOptions,
+    options: RunnerOptions
   ) => Promise<RunOutcome> | RunOutcome
 > = {
   vapor: runVapor,
@@ -166,8 +166,8 @@ export const setupBenchmark = () => {
         mergedConfig.runs,
         mergedConfig.count,
         mergedConfig.updates,
-        runCase === 'splice' ? 'splice' : 'update',
-      ),
+        runCase === 'splice' ? 'splice' : 'update'
+      )
     )
     return stats
   }
@@ -199,8 +199,8 @@ export const setupBenchmark = () => {
         (error) => {
           console.error(error)
           updateStatus(statEls, key, runCase, '計測に失敗しました')
-        },
-      ),
+        }
+      )
     )
   })
 
@@ -215,13 +215,13 @@ export const setupBenchmark = () => {
       (error) => {
         console.error(error)
         updateStatuses(statEls, runnerKeys, ['update', 'splice'], '計測に失敗しました')
-      },
-    ),
+      }
+    )
   )
 
   const resetButton = document.getElementById('bench-reset')
   resetButton?.addEventListener('click', () =>
-    clearTargets(targetEls, cleanups, statEls, runnerKeys, CASES),
+    clearTargets(targetEls, cleanups, statEls, runnerKeys, CASES)
   )
 
   // Initialize with clean state

@@ -28,12 +28,12 @@ const VaporBenchApp =
 export const runVapor = async (
   target: HTMLElement,
   items: BenchItem[],
-  options: RunnerOptions,
+  options: RunnerOptions
 ): Promise<RunOutcome> => {
   const { mountPoint, updates, mutateCount, seed, warmup, runCase } = createRunnerContext(
     target,
     items,
-    options,
+    options
   )
   const mutate =
     runCase === 'splice'
@@ -84,7 +84,7 @@ export const runVapor = async (
         (error) => {
           const message = error instanceof Error ? error.message : String(error)
           return message.includes("reading 'parent'")
-        },
+        }
       )
       target.replaceChildren()
     },

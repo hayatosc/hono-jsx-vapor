@@ -23,7 +23,7 @@ app.get('/', (c) => {
         <div id="counter-island" data-initial="0"></div>
       </section>
       <Script type="module" src="/src/client/index.tsx" />
-    </main>,
+    </main>
   )
 })
 
@@ -177,7 +177,7 @@ app.get('/benchmark', (c) => {
         </article>
       </section>
       <Script type="module" src="/src/client/benchmark/index.ts" />
-    </main>,
+    </main>
   )
 })
 

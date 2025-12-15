@@ -31,12 +31,12 @@ const HonoBenchApp =
 export const runHonoDom = async (
   target: HTMLElement,
   items: BenchItem[],
-  options: RunnerOptions,
+  options: RunnerOptions
 ): Promise<RunOutcome> => {
   const { mountPoint, updates, mutateCount, seed, warmup, runCase } = createRunnerContext(
     target,
     items,
-    options,
+    options
   )
   const mutate =
     runCase === 'splice'

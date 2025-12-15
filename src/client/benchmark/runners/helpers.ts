@@ -24,7 +24,7 @@ export const measureMount = async (mountFn: () => void | Promise<void>): Promise
  */
 export const safeCleanup = (
   cleanupFn: () => void,
-  errorFilter?: (error: unknown) => boolean,
+  errorFilter?: (error: unknown) => boolean
 ): void => {
   try {
     cleanupFn()
@@ -43,7 +43,7 @@ export const safeCleanup = (
 export const createRunnerContext = (
   target: HTMLElement,
   items: BenchItem[],
-  options: RunnerOptions,
+  options: RunnerOptions
 ) => {
   target.replaceChildren()
   const mountPoint = document.createElement('div')

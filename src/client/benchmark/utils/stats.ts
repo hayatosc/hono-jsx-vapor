@@ -16,7 +16,7 @@ export const summarizeValues = (values: number[]): StatSummary => {
   const percentile = (p: number) => {
     const idx = Math.min(
       sorted.length - 1,
-      Math.max(0, Math.round((p / 100) * (sorted.length - 1))),
+      Math.max(0, Math.round((p / 100) * (sorted.length - 1)))
     )
     return sorted[idx]
   }
@@ -41,11 +41,11 @@ export const formatStats = (
   runs: number,
   count: number,
   updates: number,
-  operationLabel: string,
+  operationLabel: string
 ): string => {
   const mount = `mount avg ${stats.mount.average.toFixed(2)} ms`
   const update = `${operationLabel} med ${stats.update.median.toFixed(2)} ms (avg ${stats.update.average.toFixed(2)}, p95 ${stats.update.p95.toFixed(
-    2,
+    2
   )}, σ ${stats.update.stddev.toFixed(2)})`
   const cleanup = stats.cleanup ? `unmount avg ${stats.cleanup.average.toFixed(2)} ms` : null
   const meta = `(runs: ${runs}, updates/run: ${updates}, nodes: ${count})`

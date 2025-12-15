@@ -9,7 +9,7 @@ export const updateStatus = (
   statEls: Record<RunnerKey, Record<RunnerCase, HTMLElement | null>>,
   key: RunnerKey,
   runCase: RunnerCase,
-  text: string,
+  text: string
 ): void => {
   const el = statEls[key][runCase]
   if (el) el.textContent = text
@@ -22,7 +22,7 @@ export const updateStatuses = (
   statEls: Record<RunnerKey, Record<RunnerCase, HTMLElement | null>>,
   runnerKeys: RunnerKey[],
   cases: RunnerCase[],
-  text: string,
+  text: string
 ): void => {
   runnerKeys.forEach((key) => cases.forEach((runCase) => updateStatus(statEls, key, runCase, text)))
 }
@@ -33,7 +33,7 @@ export const updateStatuses = (
 export const clearRunner = (
   targetEls: Record<RunnerKey, HTMLElement | null>,
   cleanups: Partial<Record<RunnerKey, () => void>>,
-  key: RunnerKey,
+  key: RunnerKey
 ): void => {
   cleanups[key]?.()
   cleanups[key] = undefined
@@ -48,7 +48,7 @@ export const clearTargets = (
   cleanups: Partial<Record<RunnerKey, () => void>>,
   statEls: Record<RunnerKey, Record<RunnerCase, HTMLElement | null>>,
   runnerKeys: RunnerKey[],
-  cases: RunnerCase[],
+  cases: RunnerCase[]
 ): void => {
   runnerKeys.forEach((key) => clearRunner(targetEls, cleanups, key))
   updateStatuses(statEls, runnerKeys, cases, RESET_MESSAGE)
@@ -72,7 +72,7 @@ export const runWithBusyGuard = async (
   page: HTMLElement,
   busy: { value: boolean },
   task: () => Promise<void>,
-  onError: (error: unknown) => void,
+  onError: (error: unknown) => void
 ): Promise<void> => {
   if (busy.value) return
 
