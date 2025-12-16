@@ -9,7 +9,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "typecheck": "tsgo -p tsconfig.server.json --noEmit && tsgo -p tsconfig.client.json --noEmit",
     "format": "oxfmt --write .",
-    "lint": "oxlint --fix .",
+    "lint": "oxlint --type-aware --fix .",
     "check": "$npm_execpath run typecheck && $npm_execpath run lint && $npm_execpath run format"
   },
   "dependencies": {
